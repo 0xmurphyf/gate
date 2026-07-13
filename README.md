@@ -1,8 +1,6 @@
-# VOXX NFT-Gated Reader
+# Sui NFT Gate
 
-VOXX 阅读器与 Sui NFT 门禁：连接钱包、验证签名，并检查地址直持或其 Sui Kiosk 内是否持有指定 Book Pass。验证通过后可进入完整 EPUB 阅读器。
-
-阅读器包括目录、章节导航、书签、字号调整、焦点模式和移动端布局。
+单文件 Sui NFT 门禁页面：连接钱包、验证签名，并检查地址直持或其 Sui Kiosk 内是否持有指定 NFT。
 
 ## 配置
 
