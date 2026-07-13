@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#010101">
-  <title>VOXX Pass</title>
+  <title>VOXX Classified Access</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
     :root{--cyan:#00ffff;--cyan-dim:rgba(0,255,255,.25);--cyan-faint:rgba(0,255,255,.04);--red:#ff4444;--text:#e0e0e0;--muted:#888;--panel:rgba(4,12,12,.92)}
@@ -57,6 +57,9 @@
     .wallet-option.placeholder:hover{border-color:rgba(0,255,255,.15);background:rgba(0,255,255,.02)}
     .wallet-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:5px;background:#182526;color:var(--cyan);font-size:13px}
     .wallet-group-label{margin:7px 0 1px;color:#526363;font-size:8px;letter-spacing:1.4px;text-align:left}
+    .classification{margin:-5px 0 15px;padding:5px 9px;border:1px solid rgba(255,68,68,.35);color:#bb5656;font-size:8px;letter-spacing:2px;text-transform:uppercase}
+    .case-ref{margin:8px 0 0;color:#354646;font-size:8px;letter-spacing:1.2px}
+    .case-ref:before{content:"FILE // ";color:#526363}
     #gate .footer{margin-top:18px}
     .ghost-config{display:none}
     @media(max-width:520px){body{background-size:56px 56px}.stage{padding:14px}.card{min-height:430px;padding:40px 24px}.title,.result h2{letter-spacing:3px}#gate{padding:25px 20px}.shield{margin-bottom:12px}.scan-scope{margin-bottom:18px}}
@@ -67,31 +70,33 @@
     <section class="card" id="gate">
       <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
       <div class="shield" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.2 4.5 5.5v5.1c0 4.8 3.1 9.2 7.5 10.7 4.4-1.5 7.5-5.9 7.5-10.7V5.5L12 2.2Z"/><path d="M9.4 11.7 11.2 13.5 15.1 9.6"/></svg></div>
-      <h1 class="title" id="siteName">VOXX PASS</h1>
-      <p class="sub">Connect your Sui wallet to verify<br><b>Book Pass</b> NFT ownership</p>
-      <p class="scan-scope">Wallet + Kiosk ownership scan</p>
+      <div class="classification">Restricted // Clearance Required</div>
+      <h1 class="title" id="siteName">VOXX CLASSIFIED</h1>
+      <p class="sub">Authenticate an authorized Sui identity<br>to access the <b>restricted archive</b></p>
+      <p class="scan-scope">On-chain clearance protocol · Wallet + Kiosk</p>
       <button class="button" id="connectButton">CONNECT WALLET</button>
-      <div class="sheet hidden" id="walletPanel"><div class="sheet-card"><div class="sheet-head"><h3>SELECT SUI WALLET</h3><button class="close" id="closeWallets" aria-label="Close">×</button></div><div class="wallet-list" id="walletList"></div></div></div>
+      <div class="sheet hidden" id="walletPanel"><div class="sheet-card"><div class="sheet-head"><h3>SELECT IDENTITY INTERFACE</h3><button class="close" id="closeWallets" aria-label="Close">×</button></div><div class="wallet-list" id="walletList"></div></div></div>
       <div class="status hidden" id="status" data-kind="loading"><span id="statusText"></span></div>
       <dl class="meta"><dt>ADDRESS</dt><dd id="address">Not connected</dd><dt>NFT TYPE</dt><dd id="nftType"></dd></dl>
-      <div class="footer">Need a pass? <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div>
+      <div class="case-ref">VOXX-ARCHIVE / BOOK-PASS / MAINNET</div>
+      <div class="footer">Request clearance: <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div>
       <span class="ghost-config" id="network">MAINNET</span>
     </section>
 
     <section class="card hidden" id="success">
       <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-      <div class="result"><div class="result-icon">✓</div><h2>ACCESS GRANTED</h2><p id="successDetail">Book Pass verified on-chain.</p><div class="secret"><b>VOXX ARCHIVE</b><p>Your wallet has access to the protected reading experience.</p></div><a class="button" id="startReadingButton" href="https://google.com">START READING</a><dl class="meta"><dt>VERIFIED</dt><dd id="successAddress"></dd></dl><button class="text-button" id="disconnectButton">DISCONNECT</button></div>
+      <div class="result"><div class="result-icon">✓</div><h2>CLEARANCE GRANTED</h2><p id="successDetail">Authorized credential confirmed on-chain.</p><div class="secret"><b>CLASSIFIED ARCHIVE // LEVEL VOXX</b><p>Identity confirmed. Restricted records are now available for this session.</p></div><a class="button" id="startReadingButton" href="https://google.com">ENTER CLASSIFIED ARCHIVE</a><dl class="meta"><dt>VERIFIED IDENTITY</dt><dd id="successAddress"></dd></dl><button class="text-button" id="disconnectButton">TERMINATE SESSION</button></div>
     </section>
 
     <section class="card hidden" id="denied">
       <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-      <div class="result denied"><div class="result-icon">×</div><h2>ACCESS DENIED</h2><p>No Book Pass was found in this wallet or any Sui Kiosk it owns.</p><button class="button" id="refreshButton">SCAN AGAIN</button><button class="button secondary" id="retryButton">CHANGE WALLET</button><div class="footer">Need a pass? <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div></div>
+      <div class="result denied"><div class="result-icon">×</div><h2>CLEARANCE DENIED</h2><p>No authorized Book Pass credential was found in this identity or its controlled Sui Kiosks.</p><button class="button" id="refreshButton">RE-RUN CLEARANCE</button><button class="button secondary" id="retryButton">CHANGE IDENTITY</button><div class="footer">Request clearance: <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div></div>
     </section>
   </main>
 
   <script>
     window.NFT_GATE_CONFIG = {
-      SITE_NAME: 'VOXX PASS',
+      SITE_NAME: 'VOXX CLASSIFIED',
       NETWORK: 'mainnet',
       NFT_TYPE: '0xe649354aa848a8ae43d52a2bf75301b3d67dd6654c8df525650c5afe86518dc5::voxx_book_pass::Nft',
       RPC_URL: '',
@@ -1045,7 +1050,7 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
       const fragment = document.createDocumentFragment();
       const marker = document.createElement('div');
       marker.className = 'featured-wallets';
-      fragment.append(marker, label('SUPPORTED WALLETS'));
+      fragment.append(marker, label('AUTHORIZED IDENTITY INTERFACES'));
 
       for (const provider of providers) {
         const wallet = detected.find((button) => {
@@ -1056,27 +1061,48 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
           used.add(wallet);
           wallet.classList.add('detected');
           const detail = wallet.querySelector('small');
-          if (detail) detail.textContent = 'DETECTED · CONNECT & VERIFY';
+          if (detail) detail.textContent = 'INTERFACE ONLINE · AUTHENTICATE';
           fragment.append(wallet);
         } else {
           const button = document.createElement('button');
           button.type = 'button';
           button.disabled = true;
           button.className = 'wallet-option placeholder';
-          button.innerHTML = `<span class="wallet-mark">${provider.mark}</span><span><strong>${provider.name}</strong><small>NOT DETECTED</small></span><span class="arrow">—</span>`;
+          button.innerHTML = `<span class="wallet-mark">${provider.mark}</span><span><strong>${provider.name}</strong><small>INTERFACE NOT PRESENT</small></span><span class="arrow">—</span>`;
           fragment.append(button);
         }
       }
 
       const other = detected.filter((button) => !used.has(button));
       if (other.length) {
-        fragment.append(label('OTHER DETECTED WALLETS'));
+        fragment.append(label('OTHER ONLINE INTERFACES'));
         for (const wallet of other) fragment.append(wallet);
       }
       list.replaceChildren(fragment);
     }
 
     new MutationObserver(enhanceWalletList).observe(list, { childList: true });
+    const statusText = document.querySelector('#statusText');
+    const statusLanguage = new Map([
+      ['Confirm the signature request in your wallet…', 'AUTHORIZE IDENTITY SIGNATURE IN WALLET…'],
+      ['SCANNING WALLET-HELD NFT…', 'VERIFYING CREDENTIALS HELD BY IDENTITY…'],
+      ['SCANNING NFTS INSIDE YOUR SUI KIOSKS…', 'SEARCHING CONTROLLED SUI KIOSKS…'],
+      ['Request cancelled. Connect again to continue.', 'AUTHENTICATION CANCELLED. SELECT AN IDENTITY INTERFACE TO RETRY.'],
+      ['Unable to reach Sui RPC. Check your connection and try again.', 'CLEARANCE NODE UNREACHABLE. VERIFY CONNECTION AND RETRY.']
+    ]);
+    new MutationObserver(() => {
+      const replacement = statusLanguage.get(statusText.textContent);
+      if (replacement) statusText.textContent = replacement;
+    }).observe(statusText, { childList: true, characterData: true, subtree: true });
+    const successDetail = document.querySelector('#successDetail');
+    const clearanceLanguage = new Map([
+      ['Book Pass found directly in this wallet.', 'CLEARANCE TOKEN LOCATED IN PRIMARY IDENTITY VAULT.'],
+      ['Book Pass found inside your Sui Kiosk.', 'CLEARANCE TOKEN LOCATED IN CONTROLLED SUI KIOSK.']
+    ]);
+    new MutationObserver(() => {
+      const replacement = clearanceLanguage.get(successDetail.textContent);
+      if (replacement) successDetail.textContent = replacement;
+    }).observe(successDetail, { childList: true, characterData: true, subtree: true });
     const retry = document.querySelector('#retryButton');
     retry.addEventListener('click', (event) => {
       event.preventDefault();
