@@ -80,7 +80,7 @@
 
     <section class="card hidden" id="success">
       <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-      <div class="result"><div class="result-icon">✓</div><h2>ACCESS GRANTED</h2><p id="successDetail">Book Pass verified on-chain.</p><div class="secret"><b>VOXX ARCHIVE</b><p>Your wallet has access. Set REDIRECT_URL in the configuration to enter the protected destination.</p></div><dl class="meta"><dt>VERIFIED</dt><dd id="successAddress"></dd></dl><button class="text-button" id="disconnectButton">DISCONNECT</button></div>
+      <div class="result"><div class="result-icon">✓</div><h2>ACCESS GRANTED</h2><p id="successDetail">Book Pass verified on-chain.</p><div class="secret"><b>VOXX ARCHIVE</b><p>Your wallet has access to the protected reading experience.</p></div><a class="button" id="startReadingButton" href="https://google.com">START READING</a><dl class="meta"><dt>VERIFIED</dt><dd id="successAddress"></dd></dl><button class="text-button" id="disconnectButton">DISCONNECT</button></div>
     </section>
 
     <section class="card hidden" id="denied">
@@ -1078,9 +1078,21 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
 
     new MutationObserver(enhanceWalletList).observe(list, { childList: true });
     const retry = document.querySelector('#retryButton');
-    retry.addEventListener('click', () => {
-      document.querySelector('#gate').classList.remove('hidden');
-      document.querySelector('#denied').classList.add('hidden');
+    retry.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      document.querySelector('#disconnectButton').click();
+
+      let attempts = 0;
+      const waitForDisconnect = setInterval(() => {
+        attempts += 1;
+        const disconnected = document.querySelector('#address').textContent === 'Not connected';
+        if (!disconnected && attempts < 50) return;
+        clearInterval(waitForDisconnect);
+        document.querySelector('#denied').classList.add('hidden');
+        document.querySelector('#gate').classList.remove('hidden');
+        document.querySelector('#connectButton').click();
+      }, 100);
     }, true);
     requestAnimationFrame(() => document.querySelector('#connectButton').click());
   })();
