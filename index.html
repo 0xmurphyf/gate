@@ -73,8 +73,8 @@
       <div class="classification">Restricted // Clearance Required</div>
       <h1 class="title" id="siteName">VOXX CLASSIFIED</h1>
       <p class="sub">Authenticate an authorized Sui identity<br>to access the <b>restricted archive</b></p>
-      <p class="scan-scope">On-chain clearance protocol · Wallet + Kiosk</p>
-      <button class="button" id="connectButton">CONNECT WALLET</button>
+      <p class="scan-scope">On-chain clearance protocol · Primary + Linked Vaults</p>
+      <button class="button" id="connectButton">INITIALIZE IDENTITY ACCESS</button>
       <div class="sheet hidden" id="walletPanel"><div class="sheet-card"><div class="sheet-head"><h3>SELECT IDENTITY INTERFACE</h3><button class="close" id="closeWallets" aria-label="Close">×</button></div><div class="wallet-list" id="walletList"></div></div></div>
       <div class="status hidden" id="status" data-kind="loading"><span id="statusText"></span></div>
       <dl class="meta"><dt>ADDRESS</dt><dd id="address">Not connected</dd><dt>NFT TYPE</dt><dd id="nftType"></dd></dl>
@@ -90,7 +90,7 @@
 
     <section class="card hidden" id="denied">
       <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-      <div class="result denied"><div class="result-icon">×</div><h2>CLEARANCE DENIED</h2><p>No authorized Book Pass credential was found in this identity or its controlled Sui Kiosks.</p><button class="button" id="refreshButton">RE-RUN CLEARANCE</button><button class="button secondary" id="retryButton">CHANGE IDENTITY</button><div class="footer">Request clearance: <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div></div>
+      <div class="result denied"><div class="result-icon">×</div><h2>CLEARANCE DENIED</h2><p>No authorized Book Pass credential was found in this identity or its linked asset vaults.</p><button class="button" id="refreshButton">RE-RUN CLEARANCE</button><button class="button secondary" id="retryButton">CHANGE IDENTITY</button><div class="footer">Request clearance: <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div></div>
     </section>
   </main>
 
@@ -1030,9 +1030,9 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
   (() => {
     const providers = [
       { name: 'Slush', aliases: ['slush', 'sui wallet'], mark: 'S' },
-      { name: 'Binance Wallet', aliases: ['binance'], mark: 'B' },
+      { name: 'Binance', aliases: ['binance'], mark: 'B' },
       { name: 'Phantom', aliases: ['phantom'], mark: 'P' },
-      { name: 'OKX Wallet', aliases: ['okx'], mark: 'O' }
+      { name: 'OKX', aliases: ['okx'], mark: 'O' }
     ];
     const list = document.querySelector('#walletList');
 
@@ -1060,6 +1060,8 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
         if (wallet) {
           used.add(wallet);
           wallet.classList.add('detected');
+          const walletName = wallet.querySelector('strong');
+          if (walletName) walletName.textContent = provider.name;
           const detail = wallet.querySelector('small');
           if (detail) detail.textContent = 'INTERFACE ONLINE · AUTHENTICATE';
           fragment.append(wallet);
@@ -1076,7 +1078,11 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
       const other = detected.filter((button) => !used.has(button));
       if (other.length) {
         fragment.append(label('OTHER ONLINE INTERFACES'));
-        for (const wallet of other) fragment.append(wallet);
+        for (const wallet of other) {
+          const walletName = wallet.querySelector('strong');
+          if (walletName) walletName.textContent = walletName.textContent.replace(/\bwallet\b/gi, '').trim() || 'Identity Interface';
+          fragment.append(wallet);
+        }
       }
       list.replaceChildren(fragment);
     }
@@ -1084,9 +1090,9 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
     new MutationObserver(enhanceWalletList).observe(list, { childList: true });
     const statusText = document.querySelector('#statusText');
     const statusLanguage = new Map([
-      ['Confirm the signature request in your wallet…', 'AUTHORIZE IDENTITY SIGNATURE IN WALLET…'],
+      ['Confirm the signature request in your wallet…', 'AUTHORIZE SIGNATURE IN IDENTITY INTERFACE…'],
       ['SCANNING WALLET-HELD NFT…', 'VERIFYING CREDENTIALS HELD BY IDENTITY…'],
-      ['SCANNING NFTS INSIDE YOUR SUI KIOSKS…', 'SEARCHING CONTROLLED SUI KIOSKS…'],
+      ['SCANNING NFTS INSIDE YOUR SUI KIOSKS…', 'SEARCHING LINKED ASSET VAULTS…'],
       ['Request cancelled. Connect again to continue.', 'AUTHENTICATION CANCELLED. SELECT AN IDENTITY INTERFACE TO RETRY.'],
       ['Unable to reach Sui RPC. Check your connection and try again.', 'CLEARANCE NODE UNREACHABLE. VERIFY CONNECTION AND RETRY.']
     ]);
@@ -1097,7 +1103,7 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
     const successDetail = document.querySelector('#successDetail');
     const clearanceLanguage = new Map([
       ['Book Pass found directly in this wallet.', 'CLEARANCE TOKEN LOCATED IN PRIMARY IDENTITY VAULT.'],
-      ['Book Pass found inside your Sui Kiosk.', 'CLEARANCE TOKEN LOCATED IN CONTROLLED SUI KIOSK.']
+      ['Book Pass found inside your Sui Kiosk.', 'CLEARANCE TOKEN LOCATED IN LINKED ASSET VAULT.']
     ]);
     new MutationObserver(() => {
       const replacement = clearanceLanguage.get(successDetail.textContent);
