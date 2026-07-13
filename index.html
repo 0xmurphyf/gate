@@ -42,8 +42,24 @@
     .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.sheet-head h3{margin:0;color:#fff;font-size:13px;font-weight:400;letter-spacing:3px}.close{border:0;background:transparent;color:#777;font-size:22px;cursor:pointer}.close:hover{color:var(--cyan)}
     .wallet-list{display:grid;gap:8px}.wallet-option{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:13px;width:100%;padding:11px 13px;border:1px solid rgba(0,255,255,.15);background:rgba(0,255,255,.02);color:var(--text);text-align:left;cursor:pointer}.wallet-option:hover{border-color:var(--cyan);background:rgba(0,255,255,.07)}.wallet-option img{width:36px;height:36px;border-radius:4px}.wallet-option strong,.wallet-option small{display:block;font-weight:400}.wallet-option strong{color:#ddd;font-size:12px;letter-spacing:1px}.wallet-option small{margin-top:4px;color:#555;font-size:9px}.arrow{color:var(--cyan)}
     .empty-wallets{padding:18px;border:1px dashed rgba(0,255,255,.2);text-align:center}.empty-wallets strong,.empty-wallets span{display:block;font-weight:400}.empty-wallets strong{color:var(--red);font-size:11px;letter-spacing:1px}.empty-wallets span{margin-top:8px;color:#666;font-size:10px;line-height:1.5}
+    /* Inline wallet chooser: keep the proven connection code, remove the modal layer. */
+    #gate{justify-content:flex-start;max-height:calc(100dvh - 28px);overflow-y:auto;padding:32px 36px}
+    #connectButton{display:none}
+    #walletPanel.sheet{position:static;inset:auto;z-index:auto;display:block!important;width:100%;margin:4px 0 0;padding:0;background:transparent;backdrop-filter:none;opacity:1;transition:none}
+    #walletPanel .sheet-card{width:100%;padding:0;border:0;background:transparent;box-shadow:none;transform:none;transition:none}
+    #walletPanel .sheet-head{margin:0 0 12px;padding-bottom:9px;border-bottom:1px solid rgba(0,255,255,.12)}
+    #walletPanel .sheet-head h3{font-size:9px;letter-spacing:2px;color:#627979}
+    #closeWallets{display:none}
+    .wallet-list{width:100%}
+    .wallet-option{min-height:56px;font-family:inherit}
+    .wallet-option.detected{border-color:rgba(0,255,255,.42);background:rgba(0,255,255,.045)}
+    .wallet-option.placeholder{opacity:.42;cursor:not-allowed}
+    .wallet-option.placeholder:hover{border-color:rgba(0,255,255,.15);background:rgba(0,255,255,.02)}
+    .wallet-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:5px;background:#182526;color:var(--cyan);font-size:13px}
+    .wallet-group-label{margin:7px 0 1px;color:#526363;font-size:8px;letter-spacing:1.4px;text-align:left}
+    #gate .footer{margin-top:18px}
     .ghost-config{display:none}
-    @media(max-width:520px){body{background-size:56px 56px}.stage,.sheet{padding:14px}.card{min-height:430px;padding:40px 24px}.sheet-card{padding:28px 20px}.title,.result h2{letter-spacing:3px}}
+    @media(max-width:520px){body{background-size:56px 56px}.stage{padding:14px}.card{min-height:430px;padding:40px 24px}.title,.result h2{letter-spacing:3px}#gate{padding:25px 20px}.shield{margin-bottom:12px}.scan-scope{margin-bottom:18px}}
   </style>
 </head>
 <body>
@@ -55,6 +71,7 @@
       <p class="sub">Connect your Sui wallet to verify<br><b>Book Pass</b> NFT ownership</p>
       <p class="scan-scope">Wallet + Kiosk ownership scan</p>
       <button class="button" id="connectButton">CONNECT WALLET</button>
+      <div class="sheet hidden" id="walletPanel"><div class="sheet-card"><div class="sheet-head"><h3>SELECT SUI WALLET</h3><button class="close" id="closeWallets" aria-label="Close">×</button></div><div class="wallet-list" id="walletList"></div></div></div>
       <div class="status hidden" id="status" data-kind="loading"><span id="statusText"></span></div>
       <dl class="meta"><dt>ADDRESS</dt><dd id="address">Not connected</dd><dt>NFT TYPE</dt><dd id="nftType"></dd></dl>
       <div class="footer">Need a pass? <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div>
@@ -71,8 +88,6 @@
       <div class="result denied"><div class="result-icon">×</div><h2>ACCESS DENIED</h2><p>No Book Pass was found in this wallet or any Sui Kiosk it owns.</p><button class="button" id="refreshButton">SCAN AGAIN</button><button class="button secondary" id="retryButton">CHANGE WALLET</button><div class="footer">Need a pass? <a href="https://voxx.app" target="_blank" rel="noopener">voxx.app</a></div></div>
     </section>
   </main>
-
-  <div class="sheet hidden" id="walletPanel"><div class="sheet-card"><div class="sheet-head"><h3>SELECT SUI WALLET</h3><button class="close" id="closeWallets" aria-label="Close">×</button></div><div class="wallet-list" id="walletList"></div></div></div>
 
   <script>
     window.NFT_GATE_CONFIG = {
@@ -1005,6 +1020,70 @@ Time: ${new Date().toISOString()}`),{signature:i}=await e.features["sui:signPers
 @noble/curves/secp256k1.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 */
+</script>
+<script>
+  (() => {
+    const providers = [
+      { name: 'Slush', aliases: ['slush', 'sui wallet'], mark: 'S' },
+      { name: 'Binance Wallet', aliases: ['binance'], mark: 'B' },
+      { name: 'Phantom', aliases: ['phantom'], mark: 'P' },
+      { name: 'OKX Wallet', aliases: ['okx'], mark: 'O' }
+    ];
+    const list = document.querySelector('#walletList');
+
+    function label(text) {
+      const node = document.createElement('div');
+      node.className = 'wallet-group-label';
+      node.textContent = text;
+      return node;
+    }
+
+    function enhanceWalletList() {
+      if (list.querySelector('.featured-wallets')) return;
+      const detected = [...list.querySelectorAll('.wallet-option')];
+      const used = new Set();
+      const fragment = document.createDocumentFragment();
+      const marker = document.createElement('div');
+      marker.className = 'featured-wallets';
+      fragment.append(marker, label('SUPPORTED WALLETS'));
+
+      for (const provider of providers) {
+        const wallet = detected.find((button) => {
+          const name = (button.querySelector('strong')?.textContent || '').toLowerCase();
+          return provider.aliases.some((alias) => name.includes(alias));
+        });
+        if (wallet) {
+          used.add(wallet);
+          wallet.classList.add('detected');
+          const detail = wallet.querySelector('small');
+          if (detail) detail.textContent = 'DETECTED · CONNECT & VERIFY';
+          fragment.append(wallet);
+        } else {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.disabled = true;
+          button.className = 'wallet-option placeholder';
+          button.innerHTML = `<span class="wallet-mark">${provider.mark}</span><span><strong>${provider.name}</strong><small>NOT DETECTED</small></span><span class="arrow">—</span>`;
+          fragment.append(button);
+        }
+      }
+
+      const other = detected.filter((button) => !used.has(button));
+      if (other.length) {
+        fragment.append(label('OTHER DETECTED WALLETS'));
+        for (const wallet of other) fragment.append(wallet);
+      }
+      list.replaceChildren(fragment);
+    }
+
+    new MutationObserver(enhanceWalletList).observe(list, { childList: true });
+    const retry = document.querySelector('#retryButton');
+    retry.addEventListener('click', () => {
+      document.querySelector('#gate').classList.remove('hidden');
+      document.querySelector('#denied').classList.add('hidden');
+    }, true);
+    requestAnimationFrame(() => document.querySelector('#connectButton').click());
+  })();
 </script>
 </body>
 </html>
